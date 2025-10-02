@@ -1,6 +1,7 @@
 EFP-Horaire
 <a href="javascript:(function()%7Bjavascript%3A(function()%7B%0A%20%20function%20pad(n)%7Breturn%20n.toString().padStart(2%2C%220%22)%3B%7D%0A%20%20function%20toICSDate(dateStr%2CtimeStr)%7B%0A%20%20%20%20const%20%5Bd%2Cm%2Cy%5D%20%3D%20dateStr.split(%22%2F%22).map(Number)%3B%0A%20%20%20%20const%20%5Bhh%2Cmm%5D%20%3D%20timeStr.split(%22%3A%22).map(Number)%3B%0A%20%20%20%20return%20y%2Bpad(m)%2Bpad(d)%2B%22T%22%2Bpad(hh)%2Bpad(mm)%2B%2200%22%3B%0A%20%20%7D%0A%0A%20%20const%20container%20%3D%20document.querySelector(%22%23divHoraires%22)%3B%0A%20%20if(!container)%7B%20alert(%22Pas%20de%20divHoraires%22)%3B%20return%3B%20%7D%0A%0A%20%20const%20h3%20%3D%20container.querySelector(%22h3%22)%20%3F%20container.querySelector(%22h3%22).innerText.trim()%20%3A%20%22planning%22%3B%0A%20%20%0A%20%20%2F%2F%20Conversion%20%22Classe%201-CE-X75-A%22%20%E2%86%92%20%221X75A%22%0A%20%20let%20classCode%20%3D%20h3%3B%0A%20%20const%20m%20%3D%20h3.match(%2FClasse%5Cs*(%5Cd%2B).*%3F(X%5Cd%2B%5Cw)%2Fi)%3B%0A%20%20if(m)%7B%0A%20%20%20%20classCode%20%3D%20m%5B1%5D%2Bm%5B2%5D.replace(%2F-%2Fg%2C%22%22)%3B%0A%20%20%7D%20else%20%7B%0A%20%20%20%20classCode%20%3D%20h3.replace(%2F%5Cs%2B%2Fg%2C%22_%22)%3B%0A%20%20%7D%0A%0A%20%20const%20rows%20%3D%20container.querySelectorAll(%22table%20tbody%20tr%22)%3B%0A%0A%20%20let%20ics%20%3D%20%22BEGIN%3AVCALENDAR%5CnVERSION%3A2.0%5CnCALSCALE%3AGREGORIAN%5Cn%22%3B%0A%20%20let%20uid%3D0%3B%0A%0A%20%20rows.forEach(tr%3D%3E%7B%0A%20%20%20%20const%20tds%20%3D%20tr.querySelectorAll(%22td%22)%3B%0A%20%20%20%20if(tds.length%3E%3D4)%7B%0A%20%20%20%20%20%20const%20date%20%3D%20tds%5B0%5D.innerText.trim()%3B%0A%20%20%20%20%20%20const%20time%20%3D%20tds%5B1%5D.innerText.trim()%3B%0A%20%20%20%20%20%20const%20matiere%20%3D%20tds%5B2%5D.innerText.trim()%3B%0A%20%20%20%20%20%20const%20%5Bstart%2Cend%5D%20%3D%20time.split(%22-%3E%22).map(s%3D%3Es.trim())%3B%0A%20%20%20%20%20%20const%20isExam%20%3D%20tr.classList.contains(%22row_negatif%22)%3B%0A%20%20%20%20%20%20const%20dtstart%20%3D%20toICSDate(date%2Cstart)%3B%0A%20%20%20%20%20%20const%20dtend%20%20%20%3D%20toICSDate(date%2Cend)%3B%0A%20%20%20%20%20%20const%20summary%20%3D%20classCode%2B%22-%22%2Bmatiere%2B(isExam%3F%22-EX%22%3A%22%22)%3B%0A%0A%20%20%20%20%20%20ics%20%2B%3D%20%22BEGIN%3AVEVENT%5Cn%22%3B%0A%20%20%20%20%20%20ics%20%2B%3D%20%22UID%3A%22%2B(uid%2B%2B)%2B%22%40%22%2BclassCode%2B%22%5Cn%22%3B%0A%20%20%20%20%20%20ics%20%2B%3D%20%22DTSTART%3BTZID%3DEurope%2FBrussels%3A%22%2Bdtstart%2B%22%5Cn%22%3B%0A%20%20%20%20%20%20ics%20%2B%3D%20%22DTEND%3BTZID%3DEurope%2FBrussels%3A%22%2Bdtend%2B%22%5Cn%22%3B%0A%20%20%20%20%20%20ics%20%2B%3D%20%22SUMMARY%3A%22%2Bsummary%2B%22%5Cn%22%3B%0A%20%20%20%20%20%20ics%20%2B%3D%20%22END%3AVEVENT%5Cn%22%3B%0A%20%20%20%20%7D%0A%20%20%7D)%3B%0A%0A%20%20ics%20%2B%3D%20%22END%3AVCALENDAR%22%3B%0A%0A%20%20%2F%2F%20t%C3%A9l%C3%A9chargement%0A%20%20const%20blob%20%3D%20new%20Blob(%5Bics%5D%2C%20%7Btype%3A%22text%2Fcalendar%22%7D)%3B%0A%20%20const%20url%20%3D%20URL.createObjectURL(blob)%3B%0A%20%20const%20a%20%3D%20document.createElement(%22a%22)%3B%0A%20%20a.href%20%3D%20url%3B%0A%20%20a.download%20%3D%20classCode%2B%22.ics%22%3B%0A%20%20a.click()%3B%0A%20%20URL.revokeObjectURL(url)%3B%0A%7D)()%3B%7D)()%3B">EFP Horaire</a>
 
+
 <script>
   javascript:(function(){
   function pad(n){return n.toString().padStart(2,"0");}
@@ -62,4 +63,88 @@ EFP-Horaire
   URL.revokeObjectURL(url);
 })();
 
+</script>
+
+
+
+
+EFP-Horaire-Group
+<a href="javascript:(function()%7Bjavascript%3A(function()%7B%0A%20%20function%20pad(n)%7Breturn%20n.toString().padStart(2%2C%220%22)%3B%7D%0A%20%20function%20toICSDate(dateStr%2CtimeStr)%7B%0A%20%20%20%20const%20%5Bd%2Cm%2Cy%5D%20%3D%20dateStr.split(%22%2F%22).map(Number)%3B%0A%20%20%20%20const%20%5Bhh%2Cmm%5D%20%3D%20timeStr.split(%22%3A%22).map(Number)%3B%0A%20%20%20%20return%20y%2Bpad(m)%2Bpad(d)%2B%22T%22%2Bpad(hh)%2Bpad(mm)%2B%2200%22%3B%0A%20%20%7D%0A%0A%20%20const%20container%20%3D%20document.querySelector(%22%23divHoraires%22)%3B%0A%20%20if(!container)%7B%20alert(%22Pas%20de%20divHoraires%22)%3B%20return%3B%20%7D%0A%0A%20%20const%20h3%20%3D%20container.querySelector(%22h3%22)%20%3F%20container.querySelector(%22h3%22).innerText.trim()%20%3A%20%22planning%22%3B%0A%0A%20%20%2F%2F%20Conversion%20%22Classe%201-CE-X75-A%22%20%E2%86%92%20%221X75A%22%0A%20%20let%20classCode%20%3D%20h3%3B%0A%20%20const%20m%20%3D%20h3.match(%2FClasse%5Cs*(%5Cd%2B).*%3F(X%5Cd%2B%5Cw)%2Fi)%3B%0A%20%20if(m)%7B%0A%20%20%20%20classCode%20%3D%20m%5B1%5D%2Bm%5B2%5D.replace(%2F-%2Fg%2C%22%22)%3B%0A%20%20%7D%20else%20%7B%0A%20%20%20%20classCode%20%3D%20h3.replace(%2F%5Cs%2B%2Fg%2C%22_%22)%3B%0A%20%20%7D%0A%0A%20%20const%20rows%20%3D%20Array.from(container.querySelectorAll(%22table%20tbody%20tr%22))%3B%0A%0A%20%20%2F%2F%20Regroupement%20par%20cl%C3%A9%20(date%2Bmati%C3%A8re%2Bexam)%0A%20%20const%20grouped%20%3D%20%7B%7D%3B%0A%20%20rows.forEach(tr%3D%3E%7B%0A%20%20%20%20const%20tds%20%3D%20tr.querySelectorAll(%22td%22)%3B%0A%20%20%20%20if(tds.length%3E%3D4)%7B%0A%20%20%20%20%20%20const%20date%20%3D%20tds%5B0%5D.innerText.trim()%3B%0A%20%20%20%20%20%20const%20time%20%3D%20tds%5B1%5D.innerText.trim()%3B%0A%20%20%20%20%20%20const%20%5Bstart%2Cend%5D%20%3D%20time.split(%22-%3E%22).map(s%3D%3Es.trim())%3B%0A%20%20%20%20%20%20const%20matiere%20%3D%20tds%5B2%5D.innerText.trim()%3B%0A%20%20%20%20%20%20const%20isExam%20%3D%20tr.classList.contains(%22row_negatif%22)%3B%0A%20%20%20%20%20%20const%20key%20%3D%20date%2B%22%7C%22%2Bmatiere%2B%22%7C%22%2BisExam%3B%0A%20%20%20%20%20%20if(!grouped%5Bkey%5D)%7B%0A%20%20%20%20%20%20%20%20grouped%5Bkey%5D%20%3D%20%7Bdate%2Cmatiere%2CisExam%2Cstart%2Cend%7D%3B%0A%20%20%20%20%20%20%7D%20else%20%7B%0A%20%20%20%20%20%20%20%20%2F%2F%20Mettre%20%C3%A0%20jour%20la%20borne%20temporelle%0A%20%20%20%20%20%20%20%20if(start%20%3C%20grouped%5Bkey%5D.start)%20grouped%5Bkey%5D.start%20%3D%20start%3B%0A%20%20%20%20%20%20%20%20if(end%20%20%20%3E%20grouped%5Bkey%5D.end)%20%20%20grouped%5Bkey%5D.end%20%20%20%3D%20end%3B%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%7D%0A%20%20%7D)%3B%0A%0A%20%20%2F%2F%20G%C3%A9n%C3%A9ration%20ICS%0A%20%20let%20ics%20%3D%20%22BEGIN%3AVCALENDAR%5CnVERSION%3A2.0%5CnCALSCALE%3AGREGORIAN%5Cn%22%3B%0A%20%20let%20uid%20%3D%200%3B%0A%20%20for(const%20key%20in%20grouped)%7B%0A%20%20%20%20const%20g%20%3D%20grouped%5Bkey%5D%3B%0A%20%20%20%20const%20dtstart%20%3D%20toICSDate(g.date%2Cg.start)%3B%0A%20%20%20%20const%20dtend%20%20%20%3D%20toICSDate(g.date%2Cg.end)%3B%0A%20%20%20%20const%20summary%20%3D%20classCode%2B%22-%22%2Bg.matiere%2B(g.isExam%3F%22-EX%22%3A%22%22)%3B%0A%20%20%20%20ics%20%2B%3D%20%22BEGIN%3AVEVENT%5Cn%22%3B%0A%20%20%20%20ics%20%2B%3D%20%22UID%3A%22%2B(uid%2B%2B)%2B%22%40%22%2BclassCode%2B%22%5Cn%22%3B%0A%20%20%20%20ics%20%2B%3D%20%22DTSTART%3BTZID%3DEurope%2FBrussels%3A%22%2Bdtstart%2B%22%5Cn%22%3B%0A%20%20%20%20ics%20%2B%3D%20%22DTEND%3BTZID%3DEurope%2FBrussels%3A%22%2Bdtend%2B%22%5Cn%22%3B%0A%20%20%20%20ics%20%2B%3D%20%22SUMMARY%3A%22%2Bsummary%2B%22%5Cn%22%3B%0A%20%20%20%20ics%20%2B%3D%20%22END%3AVEVENT%5Cn%22%3B%0A%20%20%7D%0A%20%20ics%20%2B%3D%20%22END%3AVCALENDAR%22%3B%0A%0A%20%20%2F%2F%20T%C3%A9l%C3%A9chargement%0A%20%20const%20blob%20%3D%20new%20Blob(%5Bics%5D%2C%20%7Btype%3A%22text%2Fcalendar%22%7D)%3B%0A%20%20const%20url%20%3D%20URL.createObjectURL(blob)%3B%0A%20%20const%20a%20%3D%20document.createElement(%22a%22)%3B%0A%20%20a.href%20%3D%20url%3B%0A%20%20a.download%20%3D%20classCode%2B%22.ics%22%3B%0A%20%20a.click()%3B%0A%20%20URL.revokeObjectURL(url)%3B%0A%7D)()%3B%7D)()%3B">EFP Horaire</a>
+
+
+<script>
+  javascript:(function(){
+  function pad(n){return n.toString().padStart(2,"0");}
+  function toICSDate(dateStr,timeStr){
+    const [d,m,y] = dateStr.split("/").map(Number);
+    const [hh,mm] = timeStr.split(":").map(Number);
+    return y+pad(m)+pad(d)+"T"+pad(hh)+pad(mm)+"00";
+  }
+
+  const container = document.querySelector("#divHoraires");
+  if(!container){ alert("Pas de divHoraires"); return; }
+
+  const h3 = container.querySelector("h3") ? container.querySelector("h3").innerText.trim() : "planning";
+
+  // Conversion "Classe 1-CE-X75-A" → "1X75A"
+  let classCode = h3;
+  const m = h3.match(/Classe\s*(\d+).*?(X\d+\w)/i);
+  if(m){
+    classCode = m[1]+m[2].replace(/-/g,"");
+  } else {
+    classCode = h3.replace(/\s+/g,"_");
+  }
+
+  const rows = Array.from(container.querySelectorAll("table tbody tr"));
+
+  // Regroupement par clé (date+matière+exam)
+  const grouped = {};
+  rows.forEach(tr=>{
+    const tds = tr.querySelectorAll("td");
+    if(tds.length>=4){
+      const date = tds[0].innerText.trim();
+      const time = tds[1].innerText.trim();
+      const [start,end] = time.split("->").map(s=>s.trim());
+      const matiere = tds[2].innerText.trim();
+      const isExam = tr.classList.contains("row_negatif");
+      const key = date+"|"+matiere+"|"+isExam;
+      if(!grouped[key]){
+        grouped[key] = {date,matiere,isExam,start,end};
+      } else {
+        // Mettre à jour la borne temporelle
+        if(start < grouped[key].start) grouped[key].start = start;
+        if(end   > grouped[key].end)   grouped[key].end   = end;
+      }
+    }
+  });
+
+  // Génération ICS
+  let ics = "BEGIN:VCALENDAR\nVERSION:2.0\nCALSCALE:GREGORIAN\n";
+  let uid = 0;
+  for(const key in grouped){
+    const g = grouped[key];
+    const dtstart = toICSDate(g.date,g.start);
+    const dtend   = toICSDate(g.date,g.end);
+    const summary = classCode+"-"+g.matiere+(g.isExam?"-EX":"");
+    ics += "BEGIN:VEVENT\n";
+    ics += "UID:"+(uid++)+"@"+classCode+"\n";
+    ics += "DTSTART;TZID=Europe/Brussels:"+dtstart+"\n";
+    ics += "DTEND;TZID=Europe/Brussels:"+dtend+"\n";
+    ics += "SUMMARY:"+summary+"\n";
+    ics += "END:VEVENT\n";
+  }
+  ics += "END:VCALENDAR";
+
+  // Téléchargement
+  const blob = new Blob([ics], {type:"text/calendar"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = classCode+".ics";
+  a.click();
+  URL.revokeObjectURL(url);
+})();
+
+</script>
+  
 </script>
